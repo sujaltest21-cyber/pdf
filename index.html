@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Barcode MRP Editor - 75 Point Space</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+            max-width: 1440px;
+            margin: 0 auto;
+            min-height: calc(100vh - 48px);
+        }
+
+        .sidebar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            height: fit-content;
+            position: sticky;
+            top: 24px;
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4f46e5;
+            letter-spacing: -0.02em;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            background: #f8fafc;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            color: #1e293b;
+        }
+
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+            background: #ffffff;
+        }
+
+        .input-group input[type="file"] {
+            width: 100%;
+            padding: 10px 0;
+            font-size: 14px;
+            font-family: inherit;
+            color: #475569;
+        }
+
+        .input-group input[type="file"]::file-selector-button {
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #1e293b;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            margin-right: 12px;
+        }
+
+        .input-group input[type="file"]::file-selector-button:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: #ffffff;
+            border: none;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.25);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-download {
+            background: #059669;
+            color: #ffffff;
+            border: none;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.3s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+
+        .btn-download:hover:not(:disabled) {
+            background: #047857;
+            box-shadow: 0 4px 12px rgba(5,150,105,0.25);
+        }
+
+        .btn-download:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn-download:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #upload-container {
+            position: relative;
+        }
+
+        #upload-container input[type="file"] {
+            display: none;
+        }
+
+        .file-picker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .file-picker:hover {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .file-info #file-name {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 18px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .icon-btn:hover {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .icon-btn-danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .preview-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #log {
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            padding: 12px 14px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        #log.success {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+
+        #log.error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .preview-pane {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .preview-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafafa;
+        }
+
+        .preview-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .preview-header .badge {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        #preview-container {
+            flex: 1;
+            padding: 32px 24px;
+            overflow-y: auto;
+            background: #f1f5f9;
+            background-image:
+                radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            min-height: 500px;
+        }
+
+        #preview-container .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: #94a3b8;
+            min-height: 400px;
+        }
+
+        #preview-container .empty-state svg {
+            opacity: 0.5;
+        }
+
+        #preview-container .empty-state p {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        #preview-container canvas {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+            max-width: 100%;
+            height: auto !important;
+            display: block;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #preview-container .loading-preview {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid #e2e8f0;
+            border-top-color: #4f46e5;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 900px) {
+            body { padding: 16px; }
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: static;
+            }
+            #preview-container {
+                padding: 20px 16px;
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="sidebar">
+        <h2>Smart Barcode MRP Editor</h2>
+
+        <div class="input-group">
+            <label for="mrp">MRP Text</label>
+            <input type="text" id="mrp" value="MRP :- 1999">
+        </div>
+
+        <div class="input-group">
+            <label for="pdf">PDF Label File</label>
+            <div id="upload-container">
+                <input type="file" id="pdf" accept=".pdf" onchange="onFileSelect()">
+                <button type="button" class="file-picker" id="file-picker-btn" onclick="document.getElementById('pdf').click()">Select PDF File</button>
+                <div id="file-info" class="file-info hidden">
+                    <span id="file-name"></span>
+                    <button type="button" class="icon-btn icon-btn-danger" id="clear-file-btn" onclick="clearFile()">&times;</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="filename-input">File Name (Download)</label>
+            <input type="text" id="filename-input" placeholder="File name lakho..." disabled>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-primary" onclick="processSmartPDF()">Generate Preview</button>
+            <button class="btn-download" id="download-btn" onclick="downloadPDF()" disabled>Download PDF</button>
+        </div>
+
+        <div id="log">ફાઇલ સિલેક્ટ કરો અને પ્રિવ્યુ જુઓ</div>
+    </div>
+
+    <div class="preview-pane">
+        <div class="preview-header">
+            <h3>Preview</h3>
+            <div class="preview-header-right">
+                <span class="badge" id="page-count-badge">Ready</span>
+                <button type="button" class="icon-btn icon-btn-danger" id="close-preview-btn" onclick="closePreview()">&times;</button>
+            </div>
+        </div>
+        <div id="preview-container">
+            <div class="empty-state">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <p>No preview yet</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+    let modifiedPdfBytes = null;
+
+    function onFileSelect() {
+        const input = document.getElementById('pdf');
+        const filePickerBtn = document.getElementById('file-picker-btn');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const filenameInput = document.getElementById('filename-input');
+
+        if (input.files.length > 0) {
+            const name = input.files[0].name;
+            fileName.textContent = name;
+            filePickerBtn.classList.add('hidden');
+            fileInfo.classList.remove('hidden');
+
+            const base = name.replace(/\.pdf$/i, '');
+            filenameInput.value = 'Final_' + base;
+            filenameInput.disabled = false;
+
+            document.getElementById('log').className = '';
+        }
+    }
+
+    function clearFile() {
+        const input = document.getElementById('pdf');
+        const filePickerBtn = document.getElementById('file-picker-btn');
+        const fileInfo = document.getElementById('file-info');
+        const filenameInput = document.getElementById('filename-input');
+
+        input.value = '';
+        fileInfo.classList.add('hidden');
+        filePickerBtn.classList.remove('hidden');
+        filenameInput.value = '';
+        filenameInput.disabled = true;
+        closePreview();
+        document.getElementById('log').innerText = 'ફાઇલ સિલેક્ટ કરો અને પ્રિવ્યુ જુઓ';
+        document.getElementById('log').className = '';
+    }
+
+    function closePreview() {
+        const container = document.getElementById('preview-container');
+        container.innerHTML = `
+            <div class="empty-state">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <p>No preview yet</p>
+            </div>`;
+        document.getElementById('page-count-badge').textContent = 'Ready';
+        document.getElementById('download-btn').disabled = true;
+        modifiedPdfBytes = null;
+    }
+
+    async function processSmartPDF() {
+        const fileInput = document.getElementById('pdf');
+        const mrpText = document.getElementById('mrp').value;
+        const logDiv = document.getElementById('log');
+        const downloadBtn = document.getElementById('download-btn');
+
+        if (fileInput.files.length === 0) {
+            alert("Krupa kari ne file select karo!");
+            return;
+        }
+
+        logDiv.innerText = "PDF Scan thai rahi che...";
+        logDiv.className = '';
+        downloadBtn.disabled = true;
+
+        try {
+            const file = fileInput.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+
+            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer.slice(0) });
+            const pdfTextDoc = await loadingTask.promise;
+
+            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            const pages = pdfDoc.getPages();
+
+            let totalMatches = 0;
+
+            for (let i = 0; i < pdfTextDoc.numPages; i++) {
+                const textPage = await pdfTextDoc.getPage(i + 1);
+                const textContent = await textPage.getTextContent();
+                const pageLib = pages[i];
+
+                textContent.items.forEach(item => {
+                    const cleanStr = item.str.trim();
+
+                    if (cleanStr === "New" || cleanStr === "NEW" || cleanStr.includes("New")) {
+                        totalMatches++;
+
+                        const x = item.transform[4];
+                        const y = item.transform[5];
+                        const rightSideX = x + 100;
+
+                        pageLib.drawText(mrpText, {
+                            x: rightSideX,
+                            y: y,
+                            size: 8.5,
+                            color: PDFLib.rgb(0, 0, 0)
+                        });
+                    }
+                });
+            }
+
+            if (totalMatches === 0) {
+                logDiv.innerText = "PDF ma 'New' shabd malyo nahi.";
+                logDiv.className = 'error';
+                return;
+            }
+
+            logDiv.innerText = `Total ${totalMatches} labels malya. Preview generate thai rahi che...`;
+
+            const pdfBytes = await pdfDoc.save();
+            modifiedPdfBytes = pdfBytes;
+
+            await renderPreview(pdfBytes);
+
+            downloadBtn.disabled = false;
+            logDiv.innerText = `Preview તૈયાર છે! Total ${totalMatches} labels મળ્યા.`;
+            logDiv.className = 'success';
+
+        } catch (err) {
+            console.error(err);
+            logDiv.innerText = "Bhool thai: " + err.message;
+            logDiv.className = 'error';
+            modifiedPdfBytes = null;
+        }
+    }
+
+    async function renderPreview(pdfBytes) {
+        const container = document.getElementById('preview-container');
+        const badge = document.getElementById('page-count-badge');
+
+        container.innerHTML = '<div class="loading-preview"><span class="spinner"></span>Rendering pages...</div>';
+
+        const loadingTask = pdfjsLib.getDocument({ data: pdfBytes.slice(0) });
+        const pdf = await loadingTask.promise;
+
+        const totalPages = pdf.numPages;
+        badge.textContent = totalPages + ' page' + (totalPages > 1 ? 's' : '');
+
+        container.innerHTML = '';
+
+        for (let i = 1; i <= totalPages; i++) {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 1.5 });
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            canvas.style.width = Math.min(viewport.width, 700) + 'px';
+
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            container.appendChild(canvas);
+        }
+    }
+
+    function downloadPDF() {
+        if (!modifiedPdfBytes) return;
+
+        let filename = document.getElementById('filename-input').value.trim();
+        if (!filename) {
+            filename = 'Final_Modified.pdf';
+        }
+        if (!filename.toLowerCase().endsWith('.pdf')) {
+            filename += '.pdf';
+        }
+
+        const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+
+        const logDiv = document.getElementById('log');
+        logDiv.innerText = "File download thai gayi!";
+        logDiv.className = 'success';
+    }
+</script>
+
+</body>
+</html>
