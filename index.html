@@ -3,474 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Barcode MRP Editor - 75 Point Space</title>
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <title>Smart Barcode MRP Editor</title>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- PDF Libraries -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
-
         body {
-            font-family: 'Outfit', 'Segoe UI', sans-serif;
-            background: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #f1f5f9;
             color: #1e293b;
-            min-height: 100vh;
-            padding: 24px;
+            line-height: 1.5;
+            padding: 20px;
         }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 24px;
-            max-width: 1440px;
+        .app-container {
+            max-width: 1250px;
             margin: 0 auto;
-            min-height: calc(100vh - 48px);
-        }
-
-        .sidebar {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
             display: flex;
             flex-direction: column;
-            gap: 22px;
-            height: fit-content;
-            position: sticky;
-            top: 24px;
+            gap: 24px;
         }
 
-        .sidebar h2 {
-            font-size: 20px;
-            font-weight: 700;
+        /* Sidebar styling */
+        .sidebar {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        h2 {
             color: #4f46e5;
-            letter-spacing: -0.02em;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: -0.025em;
         }
 
+        /* Custom Upload Zone */
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8fafc;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .upload-zone:hover {
+            border-color: #6366f1;
+            background: #f0f2fe;
+        }
+        .upload-icon {
+            width: 40px;
+            height: 40px;
+            color: #6366f1;
+            margin-bottom: 12px;
+        }
+        .upload-text {
+            font-size: 14px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        /* File Badge Card */
+        .file-card {
+            display: flex;
+            align-items: center;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 16px;
+            border-radius: 12px;
+            position: relative;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .file-icon {
+            width: 32px;
+            height: 32px;
+            color: #16a34a;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .file-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .file-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #14532d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .file-size {
+            font-size: 12px;
+            color: #166534;
+            margin-top: 2px;
+        }
+        .clear-file-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #166534;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 4px;
+            margin-left: 10px;
+            transition: color 0.15s;
+        }
+        .clear-file-btn:hover {
+            color: #b91c1c;
+        }
+
+        /* Form Controls */
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
-
-        .input-group label {
+        label {
             font-size: 13px;
             font-weight: 600;
             color: #475569;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
         }
-
-        .input-group input[type="text"] {
+        input[type="text"] {
             width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 15px;
-            font-family: inherit;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
             background: #f8fafc;
             transition: border-color 0.2s, box-shadow 0.2s;
-            color: #1e293b;
         }
-
-        .input-group input[type="text"]:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        input[type="text"]:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
             background: #ffffff;
         }
 
-        .input-group input[type="file"] {
-            width: 100%;
-            padding: 10px 0;
-            font-size: 14px;
-            font-family: inherit;
-            color: #475569;
-        }
-
-        .input-group input[type="file"]::file-selector-button {
-            padding: 8px 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            background: #ffffff;
-            color: #1e293b;
-            font-family: inherit;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
-            margin-right: 12px;
-        }
-
-        .input-group input[type="file"]::file-selector-button:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-        }
-
-        .btn-primary {
-            background: #4f46e5;
-            color: #ffffff;
-            border: none;
-            padding: 14px 20px;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: inherit;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: #4338ca;
-            box-shadow: 0 4px 12px rgba(79,70,229,0.25);
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        .btn-download {
-            background: #059669;
-            color: #ffffff;
-            border: none;
-            padding: 14px 20px;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: inherit;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            transition: opacity 0.3s, background 0.2s, transform 0.15s, box-shadow 0.2s;
-        }
-
-        .btn-download:hover:not(:disabled) {
-            background: #047857;
-            box-shadow: 0 4px 12px rgba(5,150,105,0.25);
-        }
-
-        .btn-download:active:not(:disabled) {
-            transform: scale(0.98);
-        }
-
-        .btn-download:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
+        /* Buttons */
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        button.action-btn {
+            background-color: #4f46e5;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s, transform 0.1s, opacity 0.2s;
+        }
+        button.action-btn:hover:not(:disabled) {
+            background-color: #4338ca;
+        }
+        button.action-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        button.action-btn:disabled {
+            background-color: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        button.secondary-btn {
+            background-color: #10b981;
+        }
+        button.secondary-btn:hover:not(:disabled) {
+            background-color: #059669;
         }
 
+        #log {
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+            text-align: center;
+            padding: 10px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Preview Pane Styling */
+        .preview-pane {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: slideUp 0.3s ease-out;
+        }
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 16px;
+        }
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .close-preview-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 20px;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .close-preview-btn:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        .preview-scroll {
+            overflow-y: auto;
+            max-height: 600px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+        .preview-page-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .preview-canvas {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            background: white;
+        }
+        .preview-page-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .preview-loading, .preview-error {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            padding: 40px;
+            text-align: center;
+        }
+        .preview-error {
+            color: #ef4444;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Utility classes */
         .hidden {
             display: none !important;
         }
 
-        #upload-container {
-            position: relative;
-        }
-
-        #upload-container input[type="file"] {
-            display: none;
-        }
-
-        .file-picker {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px dashed #cbd5e1;
-            border-radius: 10px;
-            background: #f8fafc;
-            color: #475569;
-            font-size: 14px;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
-        }
-
-        .file-picker:hover {
-            border-color: #4f46e5;
-            background: #eef2ff;
-            color: #4f46e5;
-        }
-
-        .file-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            background: #f8fafc;
-        }
-
-        .file-info #file-name {
-            flex: 1;
-            font-size: 13px;
-            font-weight: 500;
-            color: #1e293b;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .icon-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 28px;
-            border: none;
-            border-radius: 6px;
-            background: transparent;
-            color: #94a3b8;
-            font-size: 18px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-            line-height: 1;
-            flex-shrink: 0;
-        }
-
-        .icon-btn:hover {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .icon-btn-danger:hover {
-            background: #fef2f2;
-            color: #dc2626;
-        }
-
-        .preview-header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        #log {
-            font-size: 13px;
-            font-weight: 500;
-            color: #64748b;
-            padding: 12px 14px;
-            background: #f8fafc;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            transition: background 0.2s, border-color 0.2s;
-        }
-
-        #log.success {
-            background: #f0fdf4;
-            border-color: #bbf7d0;
-            color: #166534;
-        }
-
-        #log.error {
-            background: #fef2f2;
-            border-color: #fecaca;
-            color: #991b1b;
-        }
-
-        .preview-pane {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .preview-header {
-            padding: 18px 24px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #fafafa;
-        }
-
-        .preview-header h3 {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .preview-header .badge {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #64748b;
-            background: #f1f5f9;
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
-
-        #preview-container {
-            flex: 1;
-            padding: 32px 24px;
-            overflow-y: auto;
-            background: #f1f5f9;
-            background-image:
-                radial-gradient(circle, #e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 24px;
-            min-height: 500px;
-        }
-
-        #preview-container .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: #94a3b8;
-            min-height: 400px;
-        }
-
-        #preview-container .empty-state svg {
-            opacity: 0.5;
-        }
-
-        #preview-container .empty-state p {
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        #preview-container canvas {
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
-            max-width: 100%;
-            height: auto !important;
-            display: block;
-            animation: fadeInUp 0.4s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
+        /* Desktop Breakpoint */
+        @media (min-width: 1024px) {
+            body {
+                padding: 40px;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        #preview-container .loading-preview {
-            color: #64748b;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 40px;
-            text-align: center;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2.5px solid #e2e8f0;
-            border-top-color: #4f46e5;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 900px) {
-            body { padding: 16px; }
-            .dashboard {
-                grid-template-columns: 1fr;
+            .app-container {
+                flex-direction: row;
+                align-items: flex-start;
             }
             .sidebar {
-                position: static;
+                width: 400px;
+                flex-shrink: 0;
+                position: sticky;
+                top: 40px;
             }
-            #preview-container {
-                padding: 20px 16px;
-                min-height: 300px;
+            .preview-pane {
+                flex-grow: 1;
+                min-width: 0;
+                max-height: calc(100vh - 80px);
+            }
+            .preview-scroll {
+                max-height: calc(100vh - 180px);
             }
         }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
+<div class="app-container">
+    <!-- Left Sidebar: Controls -->
     <div class="sidebar">
         <h2>Smart Barcode MRP Editor</h2>
-
+        
+        <!-- File Picker Group -->
         <div class="input-group">
-            <label for="mrp">MRP Text</label>
+            <label>PDF Label File Select Karo:</label>
+            <!-- Hidden real file input -->
+            <input type="file" id="pdf" accept=".pdf" style="display: none;" onchange="onFileSelect()">
+            
+            <!-- Upload Dropzone (shown when no file is selected) -->
+            <div id="upload-zone" class="upload-zone" onclick="document.getElementById('pdf').click()">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+                <div class="upload-text">PDF ફાઇલ સિલેક્ટ કરો</div>
+            </div>
+
+            <!-- Selected File Badge (shown when file is selected) -->
+            <div id="file-card" class="file-card hidden">
+                <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <div class="file-info">
+                    <div id="file-title" class="file-title">Label.pdf</div>
+                    <div id="file-size" class="file-size">0 KB</div>
+                </div>
+                <button type="button" id="clear-file-btn" class="clear-file-btn" onclick="clearFile()" title="Deselect File">&times;</button>
+            </div>
+        </div>
+
+        <!-- MRP Text Input Group -->
+        <div class="input-group">
+            <label for="mrp">MRP Text Lakho:</label>
             <input type="text" id="mrp" value="MRP :- 1999">
         </div>
 
+        <!-- Rename File Input Group -->
         <div class="input-group">
-            <label for="pdf">PDF Label File</label>
-            <div id="upload-container">
-                <input type="file" id="pdf" accept=".pdf" onchange="onFileSelect()">
-                <button type="button" class="file-picker" id="file-picker-btn" onclick="document.getElementById('pdf').click()">Select PDF File</button>
-                <div id="file-info" class="file-info hidden">
-                    <span id="file-name"></span>
-                    <button type="button" class="icon-btn icon-btn-danger" id="clear-file-btn" onclick="clearFile()">&times;</button>
-                </div>
-            </div>
+            <label for="filename-input">New File Name (ડાઉનલોડ માટે):</label>
+            <input type="text" id="filename-input" placeholder="File name lakho...">
         </div>
 
-        <div class="input-group">
-            <label for="filename-input">File Name (Download)</label>
-            <input type="text" id="filename-input" placeholder="File name lakho..." disabled>
-        </div>
-
+        <!-- Action Buttons -->
         <div class="btn-group">
-            <button class="btn-primary" onclick="processSmartPDF()">Generate Preview</button>
-            <button class="btn-download" id="download-btn" onclick="downloadPDF()" disabled>Download PDF</button>
+            <button class="action-btn" onclick="processSmartPDF()">Preview Set Karo</button>
+            <button id="download-btn" class="action-btn secondary-btn" onclick="downloadPDF()" disabled>Download PDF</button>
         </div>
 
-        <div id="log">ફાઇલ સિલેક્ટ કરો અને પ્રિવ્યુ જુઓ</div>
+        <!-- Status Log -->
+        <div id="log">કોઈ ફાઈલ અપલોડ કરેલ નથી</div>
     </div>
 
-    <div class="preview-pane">
+    <!-- Right Area: Document Preview Pane -->
+    <div id="preview-outer" class="preview-pane hidden">
         <div class="preview-header">
-            <h3>Preview</h3>
-            <div class="preview-header-right">
-                <span class="badge" id="page-count-badge">Ready</span>
-                <button type="button" class="icon-btn icon-btn-danger" id="close-preview-btn" onclick="closePreview()">&times;</button>
-            </div>
+            <span class="preview-title">Document Preview</span>
+            <button class="close-preview-btn" onclick="closePreview()" title="Close Preview">&times;</button>
         </div>
-        <div id="preview-container">
-            <div class="empty-state">
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                </svg>
-                <p>No preview yet</p>
-            </div>
+        <div id="preview-container" class="preview-scroll">
+            <!-- Rendered canvases will be appended here -->
         </div>
     </div>
 </div>
@@ -478,85 +411,93 @@
 <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
+    let selectedFile = null;
     let modifiedPdfBytes = null;
 
+    function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
     function onFileSelect() {
-        const input = document.getElementById('pdf');
-        const filePickerBtn = document.getElementById('file-picker-btn');
-        const fileInfo = document.getElementById('file-info');
-        const fileName = document.getElementById('file-name');
-        const filenameInput = document.getElementById('filename-input');
+        const fileInput = document.getElementById('pdf');
+        if (fileInput.files.length > 0) {
+            selectedFile = fileInput.files[0];
+            
+            // Show file card, hide upload zone
+            document.getElementById('upload-zone').classList.add('hidden');
+            document.getElementById('file-card').classList.remove('hidden');
+            
+            // Set file info in badge
+            document.getElementById('file-title').innerText = selectedFile.name;
+            document.getElementById('file-size').innerText = formatBytes(selectedFile.size);
+            
+            // Pre-populate Rename input
+            const baseName = selectedFile.name.substring(0, selectedFile.name.lastIndexOf('.')) || selectedFile.name;
+            document.getElementById('filename-input').value = "Final_" + baseName;
 
-        if (input.files.length > 0) {
-            const name = input.files[0].name;
-            fileName.textContent = name;
-            filePickerBtn.classList.add('hidden');
-            fileInfo.classList.remove('hidden');
-
-            const base = name.replace(/\.pdf$/i, '');
-            filenameInput.value = 'Final_' + base;
-            filenameInput.disabled = false;
-
-            document.getElementById('log').className = '';
+            // Update log
+            const logDiv = document.getElementById('log');
+            logDiv.innerText = "ફાઇલ સિલેક્ટ થઈ ગઈ છે. 'Preview Set Karo' બટન દબાવો.";
+            logDiv.style.color = "#4b5563";
         }
     }
 
     function clearFile() {
-        const input = document.getElementById('pdf');
-        const filePickerBtn = document.getElementById('file-picker-btn');
-        const fileInfo = document.getElementById('file-info');
-        const filenameInput = document.getElementById('filename-input');
-
-        input.value = '';
-        fileInfo.classList.add('hidden');
-        filePickerBtn.classList.remove('hidden');
-        filenameInput.value = '';
-        filenameInput.disabled = true;
+        const fileInput = document.getElementById('pdf');
+        fileInput.value = ''; // Reset actual file input element
+        selectedFile = null;
+        modifiedPdfBytes = null;
+        
+        // Toggle UI panels back to original state
+        document.getElementById('upload-zone').classList.remove('hidden');
+        document.getElementById('file-card').classList.add('hidden');
+        document.getElementById('filename-input').value = '';
+        
+        // Disable download button
+        document.getElementById('download-btn').disabled = true;
+        
+        // Close preview panel
         closePreview();
-        document.getElementById('log').innerText = 'ફાઇલ સિલેક્ટ કરો અને પ્રિવ્યુ જુઓ';
-        document.getElementById('log').className = '';
+        
+        // Clear log
+        const logDiv = document.getElementById('log');
+        logDiv.innerText = "કોઈ ફાઈલ અપલોડ કરેલ નથી";
+        logDiv.style.color = "#475569";
     }
 
     function closePreview() {
-        const container = document.getElementById('preview-container');
-        container.innerHTML = `
-            <div class="empty-state">
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                </svg>
-                <p>No preview yet</p>
-            </div>`;
-        document.getElementById('page-count-badge').textContent = 'Ready';
-        document.getElementById('download-btn').disabled = true;
-        modifiedPdfBytes = null;
+        const previewOuter = document.getElementById('preview-outer');
+        previewOuter.classList.add('hidden');
+        
+        const previewContainer = document.getElementById('preview-container');
+        previewContainer.innerHTML = '';
     }
 
     async function processSmartPDF() {
-        const fileInput = document.getElementById('pdf');
         const mrpText = document.getElementById('mrp').value;
         const logDiv = document.getElementById('log');
-        const downloadBtn = document.getElementById('download-btn');
 
-        if (fileInput.files.length === 0) {
+        if (!selectedFile) {
             alert("Krupa kari ne file select karo!");
             return;
         }
 
         logDiv.innerText = "PDF Scan thai rahi che...";
-        logDiv.className = '';
-        downloadBtn.disabled = true;
+        logDiv.style.color = "#4b5563";
 
         try {
-            const file = fileInput.files[0];
-            const arrayBuffer = await file.arrayBuffer();
-
+            const arrayBuffer = await selectedFile.arrayBuffer();
+            
+            // Load text with PDF.js to scan coordinates
             const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer.slice(0) });
             const pdfTextDoc = await loadingTask.promise;
-
+            
+            // Load with PDF-lib to edit pages
             const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
             const pages = pdfDoc.getPages();
 
@@ -569,18 +510,20 @@
 
                 textContent.items.forEach(item => {
                     const cleanStr = item.str.trim();
-
+                    
                     if (cleanStr === "New" || cleanStr === "NEW" || cleanStr.includes("New")) {
                         totalMatches++;
 
                         const x = item.transform[4];
                         const y = item.transform[5];
-                        const rightSideX = x + 100;
+
+                        // x + 100 aligns MRP exactly 75 points right of the "New" boundary
+                        const rightSideX = x + 100; 
 
                         pageLib.drawText(mrpText, {
-                            x: rightSideX,
-                            y: y,
-                            size: 8.5,
+                            x: rightSideX, 
+                            y: y,  
+                            size: 8.5,   
                             color: PDFLib.rgb(0, 0, 0)
                         });
                     }
@@ -589,80 +532,105 @@
 
             if (totalMatches === 0) {
                 logDiv.innerText = "PDF ma 'New' shabd malyo nahi.";
-                logDiv.className = 'error';
+                logDiv.style.color = "#dc2626";
                 return;
             }
 
-            logDiv.innerText = `Total ${totalMatches} labels malya. Preview generate thai rahi che...`;
+            logDiv.innerText = `Total ${totalMatches} labels malya. Preview tayar che!`;
+            logDiv.style.color = "#16a34a";
 
-            const pdfBytes = await pdfDoc.save();
-            modifiedPdfBytes = pdfBytes;
+            // Save the modified PDF bytes in state
+            modifiedPdfBytes = await pdfDoc.save();
+            
+            // Enable download button
+            document.getElementById('download-btn').disabled = false;
 
-            await renderPreview(pdfBytes);
-
-            downloadBtn.disabled = false;
-            logDiv.innerText = `Preview તૈયાર છે! Total ${totalMatches} labels મળ્યા.`;
-            logDiv.className = 'success';
-
+            // Render PDF in preview panel
+            await renderPreview(modifiedPdfBytes);
+            
         } catch (err) {
             console.error(err);
             logDiv.innerText = "Bhool thai: " + err.message;
-            logDiv.className = 'error';
-            modifiedPdfBytes = null;
+            logDiv.style.color = "#dc2626";
         }
     }
 
     async function renderPreview(pdfBytes) {
-        const container = document.getElementById('preview-container');
-        const badge = document.getElementById('page-count-badge');
-
-        container.innerHTML = '<div class="loading-preview"><span class="spinner"></span>Rendering pages...</div>';
-
-        const loadingTask = pdfjsLib.getDocument({ data: pdfBytes.slice(0) });
-        const pdf = await loadingTask.promise;
-
-        const totalPages = pdf.numPages;
-        badge.textContent = totalPages + ' page' + (totalPages > 1 ? 's' : '');
-
-        container.innerHTML = '';
-
-        for (let i = 1; i <= totalPages; i++) {
-            const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale: 1.5 });
-
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            canvas.style.width = Math.min(viewport.width, 700) + 'px';
-
-            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-
-            container.appendChild(canvas);
+        const previewContainer = document.getElementById('preview-container');
+        previewContainer.innerHTML = '<div class="preview-loading">Preview loading...</div>';
+        
+        const previewOuter = document.getElementById('preview-outer');
+        previewOuter.classList.remove('hidden');
+        
+        try {
+            const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
+            const pdfDoc = await loadingTask.promise;
+            
+            previewContainer.innerHTML = ''; // Clear loading message
+            
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                const page = await pdfDoc.getPage(i);
+                
+                // Render at scale 1.5. CSS takes care of fitting it to size responsively.
+                const viewport = page.getViewport({ scale: 1.5 });
+                
+                const canvas = document.createElement('canvas');
+                canvas.className = 'preview-canvas';
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                
+                await page.render(renderContext).promise;
+                
+                // Wrap canvas and page number text in a wrapper
+                const pageWrapper = document.createElement('div');
+                pageWrapper.className = 'preview-page-wrapper';
+                
+                const pageLabel = document.createElement('div');
+                pageLabel.className = 'preview-page-label';
+                pageLabel.innerText = `Page ${i} of ${pdfDoc.numPages}`;
+                
+                pageWrapper.appendChild(canvas);
+                pageWrapper.appendChild(pageLabel);
+                
+                previewContainer.appendChild(pageWrapper);
+            }
+        } catch (err) {
+            console.error(err);
+            previewContainer.innerHTML = '<div class="preview-error">Preview load karvama bhool thai.</div>';
         }
     }
 
     function downloadPDF() {
-        if (!modifiedPdfBytes) return;
-
+        if (!modifiedPdfBytes) {
+            alert("Pela preview check karo!");
+            return;
+        }
+        
         let filename = document.getElementById('filename-input').value.trim();
         if (!filename) {
-            filename = 'Final_Modified.pdf';
+            filename = "Final_Modified_PDF";
         }
+        
+        // Ensure PDF extension is appended
         if (!filename.toLowerCase().endsWith('.pdf')) {
             filename += '.pdf';
         }
-
+        
         const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = filename;
         link.click();
-        URL.revokeObjectURL(link.href);
-
+        
         const logDiv = document.getElementById('log');
-        logDiv.innerText = "File download thai gayi!";
-        logDiv.className = 'success';
+        logDiv.innerText = "ફાઇલ ડાઉનલોડ થઈ ગઈ છે!";
+        logDiv.style.color = "#16a34a";
     }
 </script>
 
