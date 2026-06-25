@@ -536,6 +536,9 @@
             const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
             const pages = pdfDoc.getPages();
 
+            // Embed standard Helvetica font to guarantee PDF rendering compatibility
+            const helveticaFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+
             let totalMatches = 0;
 
             for (let i = 0; i < pdfTextDoc.numPages; i++) {
@@ -559,6 +562,7 @@
                             x: rightSideX, 
                             y: y,  
                             size: 8.5,   
+                            font: helveticaFont,
                             color: PDFLib.rgb(0, 0, 0)
                         });
                     }
