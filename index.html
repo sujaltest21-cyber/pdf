@@ -447,6 +447,7 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
     let selectedFile = null;
+    let editedPdfBytes = null;
     let modifiedPdfBytes = null;
 
     function formatBytes(bytes, decimals = 2) {
@@ -486,6 +487,7 @@
         const fileInput = document.getElementById('pdf');
         fileInput.value = ''; // Reset actual file input element
         selectedFile = null;
+        editedPdfBytes = null;
         modifiedPdfBytes = null;
         
         // Toggle UI panels back to original state
@@ -643,8 +645,8 @@
                 });
             }
 
-            // Save the final image-based PDF
-            modifiedPdfBytes = await outputPdfDoc.save();
+            // Save the edited vector PDF bytes in editedPdfBytes (very fast!)
+            editedPdfBytes = await pdfDoc.save();
 
             logDiv.innerText = `Total ${totalMatches} labels malya. Preview tayar che!`;
             logDiv.style.color = "#16a34a";
@@ -652,8 +654,8 @@
             // Enable download button
             document.getElementById('download-btn').disabled = false;
 
-            // Render PDF in preview panel (slice buffer to protect download integrity)
-            await renderPreview(modifiedPdfBytes);
+            // Render vector PDF in preview panel (slice buffer to protect integrity)
+            await renderPreview(editedPdfBytes);
             
         } catch (err) {
             console.error(err);
@@ -714,31 +716,99 @@
         }
     }
 
-    function downloadPDF() {
-        if (!modifiedPdfBytes) {
+    async function downloadPDF() {
+        if (!editedPdfBytes) {
             alert("Pela preview check karo!");
             return;
         }
         
-        let filename = document.getElementById('filename-input').value.trim();
-        if (!filename) {
-            filename = "Final_Modified_PDF";
-        }
-        
-        // Ensure PDF extension is appended
-        if (!filename.toLowerCase().endsWith('.pdf')) {
-            filename += '.pdf';
-        }
-        
-        const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        
         const logDiv = document.getElementById('log');
-        logDiv.innerText = "ફાઇલ ડાઉનલોડ થઈ ગઈ છે!";
-        logDiv.style.color = "#16a34a";
+        logDiv.innerText = "High-Resolution (Full HD) PDF generate thai rahi che. Krupa kari raho...";
+        logDiv.style.color = "var(--text-primary)";
+        
+        // Disable download button temporarily to prevent double click
+        const downloadBtn = document.getElementById('download-btn');
+        downloadBtn.disabled = true;
+
+        try {
+            // Load edited PDF in PDF.js to render to high-res canvases
+            const renderLoadingTask = pdfjsLib.getDocument({ data: editedPdfBytes.slice(0) });
+            const renderPdfDoc = await renderLoadingTask.promise;
+
+            // Create a brand new clean output PDF
+            const outputPdfDoc = await PDFLib.PDFDocument.create();
+
+            for (let i = 1; i <= renderPdfDoc.numPages; i++) {
+                const page = await renderPdfDoc.getPage(i);
+                
+                // Render at scale 3.0 for sharp, high-res printing (Full HD)
+                const viewport = page.getViewport({ scale: 3.0 });
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Pre-fill canvas with white background to avoid transparent black zones
+                context.fillStyle = '#ffffff';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                
+                await page.render(renderContext).promise;
+                
+                // Export canvas to PNG image (lossless, perfect for barcodes)
+                const imgDataUrl = canvas.toDataURL('image/png');
+                const imgResponse = await fetch(imgDataUrl);
+                const imgBytes = await imgResponse.arrayBuffer();
+                
+                // Embed image in the output PDF
+                const embeddedImg = await outputPdfDoc.embedPng(imgBytes);
+                
+                // Add page of standard dimensions rounded to integers (points)
+                const pageWidth = Math.round(viewport.width / 3.0);
+                const pageHeight = Math.round(viewport.height / 3.0);
+                
+                const newPage = outputPdfDoc.addPage([pageWidth, pageHeight]);
+                newPage.drawImage(embeddedImg, {
+                    x: 0,
+                    y: 0,
+                    width: pageWidth,
+                    height: pageHeight
+                });
+            }
+
+            // Save the final image-based PDF
+            modifiedPdfBytes = await outputPdfDoc.save();
+
+            let filename = document.getElementById('filename-input').value.trim();
+            if (!filename) {
+                filename = "Final_Modified_PDF";
+            }
+            
+            // Ensure PDF extension is appended
+            if (!filename.toLowerCase().endsWith('.pdf')) {
+                filename += '.pdf';
+            }
+            
+            const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            
+            logDiv.innerText = "ફાઇલ ડાઉનલોડ થઈ ગઈ છે!";
+            logDiv.style.color = "#16a34a";
+        } catch (err) {
+            console.error(err);
+            logDiv.innerText = "Download fail thayu: " + err.message;
+            logDiv.style.color = "#dc2626";
+        } finally {
+            downloadBtn.disabled = false;
+        }
     }
 </script>
 
