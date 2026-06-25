@@ -594,7 +594,7 @@
             const tempPdfBytes = await pdfDoc.save();
 
             // Load edited PDF in PDF.js to render to high-res canvases
-            const renderLoadingTask = pdfjsLib.getDocument({ data: tempPdfBytes });
+            const renderLoadingTask = pdfjsLib.getDocument({ data: tempPdfBytes.slice(0) });
             const renderPdfDoc = await renderLoadingTask.promise;
 
             // Create a brand new clean output PDF
@@ -622,16 +622,17 @@
                 
                 await page.render(renderContext).promise;
                 
-                // Export canvas to JPEG image
-                const imgDataUrl = canvas.toDataURL('image/jpeg', 0.95);
-                const imgBytes = dataURLtoUint8Array(imgDataUrl);
+                // Export canvas to PNG image (lossless, perfect for barcodes)
+                const imgDataUrl = canvas.toDataURL('image/png');
+                const imgResponse = await fetch(imgDataUrl);
+                const imgBytes = await imgResponse.arrayBuffer();
                 
                 // Embed image in the output PDF
-                const embeddedImg = await outputPdfDoc.embedJpg(imgBytes);
+                const embeddedImg = await outputPdfDoc.embedPng(imgBytes);
                 
-                // Add page of standard dimensions (points)
-                const pageWidth = viewport.width / 3.0;
-                const pageHeight = viewport.height / 3.0;
+                // Add page of standard dimensions rounded to integers (points)
+                const pageWidth = Math.round(viewport.width / 3.0);
+                const pageHeight = Math.round(viewport.height / 3.0);
                 
                 const newPage = outputPdfDoc.addPage([pageWidth, pageHeight]);
                 newPage.drawImage(embeddedImg, {
@@ -651,7 +652,7 @@
             // Enable download button
             document.getElementById('download-btn').disabled = false;
 
-            // Render PDF in preview panel
+            // Render PDF in preview panel (slice buffer to protect download integrity)
             await renderPreview(modifiedPdfBytes);
             
         } catch (err) {
@@ -669,7 +670,8 @@
         previewOuter.classList.remove('hidden');
         
         try {
-            const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
+            // slice(0) to create a copy of the buffer, preventing pdf.js from transferring/neutering it
+            const loadingTask = pdfjsLib.getDocument({ data: pdfBytes.slice(0) });
             const pdfDoc = await loadingTask.promise;
             
             previewContainer.innerHTML = ''; // Clear loading message
