@@ -19,11 +19,11 @@
         }
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(-45deg, #e8f0fe, #fce8e6, #e6f4ea, #f3e8fd);
+            background: linear-gradient(-45deg, #060814, #0b111e, #060814, #08071a);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             min-height: 100vh;
-            color: #1e293b;
+            color: #f8fafc;
             line-height: 1.5;
             padding: 20px;
         }
@@ -40,36 +40,36 @@
             gap: 24px;
         }
 
-        /* Sidebar styling - Glassmorphism */
+        /* Sidebar styling - Dark Glassmorphism */
         .sidebar {
-            background: rgba(255, 255, 255, 0.45);
+            background: rgba(11, 17, 30, 0.7);
             backdrop-filter: blur(14px) saturate(160%);
             -webkit-backdrop-filter: blur(14px) saturate(160%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
         h2 {
-            color: #4f46e5;
+            color: #818cf8;
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 5px;
             letter-spacing: -0.025em;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        /* Custom Upload Zone - Glassmorphism */
+        /* Custom Upload Zone - Dark Glassmorphism */
         .upload-zone {
-            border: 2px dashed rgba(79, 70, 229, 0.3);
+            border: 2px dashed rgba(129, 140, 248, 0.25);
             border-radius: 12px;
             padding: 30px 20px;
             text-align: center;
             cursor: pointer;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(6, 8, 14, 0.4);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             transition: all 0.2s ease-in-out;
@@ -79,30 +79,30 @@
             justify-content: center;
         }
         .upload-zone:hover {
-            border-color: #6366f1;
-            background: rgba(255, 255, 255, 0.5);
+            border-color: #818cf8;
+            background: rgba(6, 8, 14, 0.6);
             transform: translateY(-2px);
         }
         .upload-icon {
             width: 40px;
             height: 40px;
-            color: #6366f1;
+            color: #818cf8;
             margin-bottom: 12px;
         }
         .upload-text {
             font-size: 14px;
-            color: #475569;
+            color: #94a3b8;
             font-weight: 500;
         }
 
-        /* File Badge Card - Glassmorphism */
+        /* File Badge Card - Dark Glassmorphism */
         .file-card {
             display: flex;
             align-items: center;
-            background: rgba(240, 253, 244, 0.6);
+            background: rgba(4, 47, 46, 0.5);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
-            border: 1px solid rgba(187, 247, 208, 0.7);
+            border: 1px solid rgba(16, 185, 129, 0.35);
             padding: 16px;
             border-radius: 12px;
             position: relative;
@@ -111,7 +111,7 @@
         .file-icon {
             width: 32px;
             height: 32px;
-            color: #16a34a;
+            color: #34d399;
             margin-right: 12px;
             flex-shrink: 0;
         }
@@ -122,21 +122,21 @@
         .file-title {
             font-size: 14px;
             font-weight: 600;
-            color: #14532d;
+            color: #a7f3d0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .file-size {
             font-size: 12px;
-            color: #166534;
+            color: #34d399;
             margin-top: 2px;
         }
         .clear-file-btn {
             background: none;
             border: none;
             font-size: 24px;
-            color: #166534;
+            color: #a7f3d0;
             cursor: pointer;
             line-height: 1;
             padding: 0 4px;
@@ -144,7 +144,7 @@
             transition: color 0.15s;
         }
         .clear-file-btn:hover {
-            color: #b91c1c;
+            color: #f87171;
         }
 
         /* Form Controls */
@@ -156,27 +156,27 @@
         label {
             font-size: 13px;
             font-weight: 600;
-            color: #475569;
+            color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
         input[type="text"] {
             width: 100%;
             padding: 12px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 8px;
             font-size: 14px;
-            color: #1e293b;
+            color: #f1f5f9;
             outline: none;
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(6, 8, 14, 0.55);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
         }
         input[type="text"]:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-            background: rgba(255, 255, 255, 0.55);
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+            background: rgba(6, 8, 14, 0.75);
         }
 
         /* Buttons */
@@ -187,7 +187,7 @@
             margin-top: 10px;
         }
         button.action-btn {
-            background-color: #4f46e5;
+            background-color: #6366f1;
             color: #ffffff;
             border: none;
             padding: 14px;
@@ -200,42 +200,42 @@
             justify-content: center;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
             transition: background-color 0.2s, transform 0.1s, opacity 0.2s, box-shadow 0.2s;
         }
         button.action-btn:hover:not(:disabled) {
-            background-color: #4338ca;
-            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+            background-color: #4f46e5;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
         }
         button.action-btn:active:not(:disabled) {
             transform: scale(0.98);
         }
         button.action-btn:disabled {
-            background-color: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #475569;
             cursor: not-allowed;
             box-shadow: none;
         }
         button.secondary-btn {
             background-color: #10b981;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
         }
         button.secondary-btn:hover:not(:disabled) {
             background-color: #059669;
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
         }
 
         #log {
             font-size: 14px;
             font-weight: 500;
-            color: #475569;
+            color: #cbd5e1;
             text-align: center;
             padding: 10px;
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(6, 8, 14, 0.5);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 8px;
             min-height: 40px;
             display: flex;
@@ -243,15 +243,15 @@
             justify-content: center;
         }
 
-        /* Preview Pane Styling - Glassmorphism */
+        /* Preview Pane Styling - Dark Glassmorphism */
         .preview-pane {
-            background: rgba(255, 255, 255, 0.45);
+            background: rgba(11, 17, 30, 0.7);
             backdrop-filter: blur(14px) saturate(160%);
             -webkit-backdrop-filter: blur(14px) saturate(160%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -261,22 +261,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding-bottom: 16px;
         }
         .preview-title {
             font-size: 18px;
             font-weight: 600;
-            color: #1e293b;
+            color: #f8fafc;
         }
         .close-preview-btn {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
             border: none;
             width: 32px;
             height: 32px;
             border-radius: 50%;
             font-size: 20px;
-            color: #64748b;
+            color: #94a3b8;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -284,18 +284,18 @@
             transition: all 0.2s;
         }
         .close-preview-btn:hover {
-            background: #fee2e2;
-            color: #ef4444;
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
             transform: scale(1.05);
         }
         .preview-scroll {
             overflow-y: auto;
             max-height: 600px;
             padding: 15px;
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(6, 8, 14, 0.65);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
@@ -312,20 +312,20 @@
         .preview-canvas {
             max-width: 100%;
             height: auto;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
             border-radius: 8px;
             background: white;
         }
         .preview-page-label {
             font-size: 12px;
             font-weight: 500;
-            color: #64748b;
+            color: #94a3b8;
         }
 
         .preview-loading, .preview-error {
             font-size: 14px;
             font-weight: 500;
-            color: #64748b;
+            color: #94a3b8;
             padding: 40px;
             text-align: center;
         }
@@ -478,8 +478,8 @@
 
             // Update log
             const logDiv = document.getElementById('log');
-            logDiv.innerText = "ફાઇલ સિલેક્ટ થઈ ગઈ છે. 'Preview Set Karo' બટન દબાવો.";
-            logDiv.style.color = "#4b5563";
+            logDiv.innerText = "ફાઇલ સિલેક્ટ થઈ ગઈ છે. 'Preview' બટન દબાવો.";
+            logDiv.style.color = "#cbd5e1";
         }
     }
 
@@ -504,7 +504,7 @@
         // Clear log
         const logDiv = document.getElementById('log');
         logDiv.innerText = "કોઈ ફાઈલ અપલોડ કરેલ નથી";
-        logDiv.style.color = "#475569";
+        logDiv.style.color = "#94a3b8";
     }
 
     function closePreview() {
@@ -525,7 +525,7 @@
         }
 
         logDiv.innerText = "PDF Scan thai rahi che...";
-        logDiv.style.color = "#4b5563";
+        logDiv.style.color = "#cbd5e1";
 
         try {
             const arrayBuffer = await selectedFile.arrayBuffer();
@@ -573,7 +573,7 @@
 
             if (totalMatches === 0) {
                 logDiv.innerText = "PDF ma 'New' shabd malyo nahi.";
-                logDiv.style.color = "#dc2626";
+                logDiv.style.color = "#f87171";
                 return;
             }
 
@@ -581,7 +581,7 @@
             modifiedPdfBytes = await pdfDoc.save();
 
             logDiv.innerText = `Total ${totalMatches} labels malya. Preview tayar che!`;
-            logDiv.style.color = "#16a34a";
+            logDiv.style.color = "#4ade80";
             
             // Enable download button
             document.getElementById('download-btn').disabled = false;
@@ -592,7 +592,7 @@
         } catch (err) {
             console.error(err);
             logDiv.innerText = "Bhool thai: " + err.message;
-            logDiv.style.color = "#dc2626";
+            logDiv.style.color = "#f87171";
         }
     }
 
@@ -672,7 +672,7 @@
         
         const logDiv = document.getElementById('log');
         logDiv.innerText = "ફાઇલ ડાઉનલોડ થઈ ગઈ છે!";
-        logDiv.style.color = "#16a34a";
+        logDiv.style.color = "#4ade80";
     }
 </script>
 
