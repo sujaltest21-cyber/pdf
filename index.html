@@ -400,6 +400,33 @@
             display: none !important;
         }
 
+        /* Arrow Buttons Styling */
+        .arrow-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            outline: none;
+        }
+        .arrow-btn:hover {
+            background: var(--btn-primary);
+            color: #ffffff;
+            border-color: var(--btn-primary);
+            transform: scale(1.05);
+        }
+        .arrow-btn:active {
+            transform: scale(0.95);
+        }
+
         /* Desktop Breakpoint */
         @media (min-width: 1024px) {
             body {
@@ -408,6 +435,7 @@
             .app-container {
                 flex-direction: row;
                 align-items: flex-start;
+                justify-content: center;
             }
             .sidebar {
                 width: 400px;
@@ -416,8 +444,10 @@
                 top: 40px;
             }
             .preview-pane {
-                flex-grow: 1;
-                min-width: 0;
+                width: 400px;
+                flex-shrink: 0;
+                position: sticky;
+                top: 40px;
                 max-height: calc(100vh - 80px);
             }
             .preview-scroll {
@@ -485,15 +515,47 @@
             <input type="text" id="mrp" value="MRP :- 1999">
         </div>
 
-        <!-- Offset Controls Group -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div class="input-group">
-                <label for="offset-x">X Offset (ડાબે/જમણે):</label>
-                <input type="number" id="offset-x" value="100" step="5">
-            </div>
-            <div class="input-group">
-                <label for="offset-y">Y Offset (ઉપર/નીચે):</label>
-                <input type="number" id="offset-y" value="0" step="5">
+        <!-- Offset Controls Group (Arrow D-pad) -->
+        <div class="input-group">
+            <label>MRP Position (એરો થી ખસેડો):</label>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; background: var(--input-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                
+                <!-- D-Pad Grid -->
+                <div style="display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); gap: 8px; justify-content: center; align-items: center;">
+                    <!-- Row 1: Up Button -->
+                    <div></div>
+                    <button type="button" class="arrow-btn" onclick="nudge('up')" title="Up (Y Increase)">▲</button>
+                    <div></div>
+                    
+                    <!-- Row 2: Left, Value, Right -->
+                    <button type="button" class="arrow-btn" onclick="nudge('left')" title="Left (X Decrease)">◀</button>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--text-primary); text-align: center; line-height: 1.2;">
+                        <span id="val-x">X: 100</span>
+                        <span id="val-y">Y: 0</span>
+                    </div>
+                    <button type="button" class="arrow-btn" onclick="nudge('right')" title="Right (X Increase)">▶</button>
+                    
+                    <!-- Row 3: Down Button -->
+                    <div></div>
+                    <button type="button" class="arrow-btn" onclick="nudge('down')" title="Down (Y Decrease)">▼</button>
+                    <div></div>
+                </div>
+
+                <!-- Hidden inputs to maintain compatibility with existing pdf processing code -->
+                <input type="hidden" id="offset-x" value="100">
+                <input type="hidden" id="offset-y" value="0">
+
+                <!-- Step Size Control -->
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px; width: 100%; justify-content: space-between;">
+                    <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Nudge Step:</span>
+                    <select id="nudge-step" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-size: 12px; outline: none; cursor: pointer;">
+                        <option value="1">1 pt</option>
+                        <option value="5" selected>5 pt</option>
+                        <option value="10">10 pt</option>
+                        <option value="20">20 pt</option>
+                        <option value="50">50 pt</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -628,6 +690,12 @@
         fileInput.value = ''; // Reset actual file input element
         selectedFile = null;
         modifiedPdfBytes = null;
+        
+        // Reset offsets to default
+        document.getElementById('offset-x').value = 100;
+        document.getElementById('offset-y').value = 0;
+        document.getElementById('val-x').innerText = 'X: 100';
+        document.getElementById('val-y').innerText = 'Y: 0';
         
         // Toggle UI panels back to original state
         document.getElementById('upload-zone').classList.remove('hidden');
@@ -803,6 +871,34 @@
         previewScale = 1.5;
         document.getElementById('zoom-label').innerText = '150%';
         await renderPreview(modifiedPdfBytes);
+    }
+
+    // Nudge Offsets via Arrow Buttons
+    async function nudge(direction) {
+        const step = parseFloat(document.getElementById('nudge-step').value) || 5;
+        let offsetX = parseFloat(document.getElementById('offset-x').value) || 0;
+        let offsetY = parseFloat(document.getElementById('offset-y').value) || 0;
+
+        if (direction === 'up') {
+            offsetY += step; // In PDF, Y coordinates go up from bottom
+        } else if (direction === 'down') {
+            offsetY -= step;
+        } else if (direction === 'left') {
+            offsetX -= step;
+        } else if (direction === 'right') {
+            offsetX += step;
+        }
+
+        // Update hidden inputs and labels
+        document.getElementById('offset-x').value = offsetX;
+        document.getElementById('offset-y').value = offsetY;
+        document.getElementById('val-x').innerText = `X: ${offsetX}`;
+        document.getElementById('val-y').innerText = `Y: ${offsetY}`;
+
+        // If a file is currently active, regenerate PDF on the fly
+        if (selectedFile) {
+            await processSmartPDF();
+        }
     }
 
     function downloadPDF() {
