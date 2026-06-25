@@ -423,7 +423,7 @@
 
         <!-- Action Buttons -->
         <div class="btn-group">
-            <button class="action-btn" onclick="processSmartPDF()">Preview Set Karo</button>
+            <button class="action-btn" onclick="processSmartPDF()">Preview</button>
             <button id="download-btn" class="action-btn secondary-btn" onclick="downloadPDF()" disabled>Download PDF</button>
         </div>
 
@@ -515,18 +515,6 @@
         previewContainer.innerHTML = '';
     }
 
-    // Helper to convert base64 data URL to Uint8Array
-    function dataURLtoUint8Array(dataurl) {
-        const arr = dataurl.split(',');
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
-        }
-        return u8arr;
-    }
-
     async function processSmartPDF() {
         const mrpText = document.getElementById('mrp').value;
         const logDiv = document.getElementById('log');
@@ -589,64 +577,8 @@
                 return;
             }
 
-            logDiv.innerText = "High-Resolution (Full HD) PDF generate thai rahi che...";
-            logDiv.style.color = "#4b5563";
-
-            // Save the edited PDF bytes temporarily
-            const tempPdfBytes = await pdfDoc.save();
-
-            // Load edited PDF in PDF.js to render to high-res canvases
-            const renderLoadingTask = pdfjsLib.getDocument({ data: tempPdfBytes.slice(0) });
-            const renderPdfDoc = await renderLoadingTask.promise;
-
-            // Create a brand new clean output PDF
-            const outputPdfDoc = await PDFLib.PDFDocument.create();
-
-            for (let i = 1; i <= renderPdfDoc.numPages; i++) {
-                const page = await renderPdfDoc.getPage(i);
-                
-                // Render at scale 3.0 for sharp, high-res printing (Full HD)
-                const viewport = page.getViewport({ scale: 3.0 });
-                
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                // Pre-fill canvas with white background to avoid transparent black zones
-                context.fillStyle = '#ffffff';
-                context.fillRect(0, 0, canvas.width, canvas.height);
-                
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-                
-                await page.render(renderContext).promise;
-                
-                // Export canvas to PNG image (lossless, perfect for barcodes)
-                const imgDataUrl = canvas.toDataURL('image/png');
-                const imgResponse = await fetch(imgDataUrl);
-                const imgBytes = await imgResponse.arrayBuffer();
-                
-                // Embed image in the output PDF
-                const embeddedImg = await outputPdfDoc.embedPng(imgBytes);
-                
-                // Add page of standard dimensions rounded to integers (points)
-                const pageWidth = Math.round(viewport.width / 3.0);
-                const pageHeight = Math.round(viewport.height / 3.0);
-                
-                const newPage = outputPdfDoc.addPage([pageWidth, pageHeight]);
-                newPage.drawImage(embeddedImg, {
-                    x: 0,
-                    y: 0,
-                    width: pageWidth,
-                    height: pageHeight
-                });
-            }
-
-            // Save the edited vector PDF bytes in editedPdfBytes (very fast!)
-            editedPdfBytes = await pdfDoc.save();
+            // Save the edited PDF bytes directly (extremely fast and infinite resolution vector)
+            modifiedPdfBytes = await pdfDoc.save();
 
             logDiv.innerText = `Total ${totalMatches} labels malya. Preview tayar che!`;
             logDiv.style.color = "#16a34a";
@@ -654,8 +586,8 @@
             // Enable download button
             document.getElementById('download-btn').disabled = false;
 
-            // Render vector PDF in preview panel (slice buffer to protect integrity)
-            await renderPreview(editedPdfBytes);
+            // Render PDF in preview panel (slice buffer to protect download integrity)
+            await renderPreview(modifiedPdfBytes);
             
         } catch (err) {
             console.error(err);
@@ -716,99 +648,31 @@
         }
     }
 
-    async function downloadPDF() {
-        if (!editedPdfBytes) {
+    function downloadPDF() {
+        if (!modifiedPdfBytes) {
             alert("Pela preview check karo!");
             return;
         }
         
-        const logDiv = document.getElementById('log');
-        logDiv.innerText = "High-Resolution (Full HD) PDF generate thai rahi che. Krupa kari raho...";
-        logDiv.style.color = "var(--text-primary)";
-        
-        // Disable download button temporarily to prevent double click
-        const downloadBtn = document.getElementById('download-btn');
-        downloadBtn.disabled = true;
-
-        try {
-            // Load edited PDF in PDF.js to render to high-res canvases
-            const renderLoadingTask = pdfjsLib.getDocument({ data: editedPdfBytes.slice(0) });
-            const renderPdfDoc = await renderLoadingTask.promise;
-
-            // Create a brand new clean output PDF
-            const outputPdfDoc = await PDFLib.PDFDocument.create();
-
-            for (let i = 1; i <= renderPdfDoc.numPages; i++) {
-                const page = await renderPdfDoc.getPage(i);
-                
-                // Render at scale 3.0 for sharp, high-res printing (Full HD)
-                const viewport = page.getViewport({ scale: 3.0 });
-                
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                // Pre-fill canvas with white background to avoid transparent black zones
-                context.fillStyle = '#ffffff';
-                context.fillRect(0, 0, canvas.width, canvas.height);
-                
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-                
-                await page.render(renderContext).promise;
-                
-                // Export canvas to PNG image (lossless, perfect for barcodes)
-                const imgDataUrl = canvas.toDataURL('image/png');
-                const imgResponse = await fetch(imgDataUrl);
-                const imgBytes = await imgResponse.arrayBuffer();
-                
-                // Embed image in the output PDF
-                const embeddedImg = await outputPdfDoc.embedPng(imgBytes);
-                
-                // Add page of standard dimensions rounded to integers (points)
-                const pageWidth = Math.round(viewport.width / 3.0);
-                const pageHeight = Math.round(viewport.height / 3.0);
-                
-                const newPage = outputPdfDoc.addPage([pageWidth, pageHeight]);
-                newPage.drawImage(embeddedImg, {
-                    x: 0,
-                    y: 0,
-                    width: pageWidth,
-                    height: pageHeight
-                });
-            }
-
-            // Save the final image-based PDF
-            modifiedPdfBytes = await outputPdfDoc.save();
-
-            let filename = document.getElementById('filename-input').value.trim();
-            if (!filename) {
-                filename = "Final_Modified_PDF";
-            }
-            
-            // Ensure PDF extension is appended
-            if (!filename.toLowerCase().endsWith('.pdf')) {
-                filename += '.pdf';
-            }
-            
-            const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-            
-            logDiv.innerText = "ફાઇલ ડાઉનલોડ થઈ ગઈ છે!";
-            logDiv.style.color = "#16a34a";
-        } catch (err) {
-            console.error(err);
-            logDiv.innerText = "Download fail thayu: " + err.message;
-            logDiv.style.color = "#dc2626";
-        } finally {
-            downloadBtn.disabled = false;
+        let filename = document.getElementById('filename-input').value.trim();
+        if (!filename) {
+            filename = "Final_Modified_PDF";
         }
+        
+        // Ensure PDF extension is appended
+        if (!filename.toLowerCase().endsWith('.pdf')) {
+            filename += '.pdf';
+        }
+        
+        const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        
+        const logDiv = document.getElementById('log');
+        logDiv.innerText = "ફાઇલ ડાઉનલોડ થઈ ગઈ છે!";
+        logDiv.style.color = "#16a34a";
     }
 </script>
 
