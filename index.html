@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="gu">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -397,7 +397,7 @@
         
         <!-- File Picker Group -->
         <div class="input-group">
-            <label>PDF Label File Select Karo:</label>
+            <label>Select PDF Label File:</label>
             <!-- Hidden real file input -->
             <input type="file" id="pdf" accept=".pdf" style="display: none;" onchange="onFileSelect()">
             
@@ -406,7 +406,7 @@
                 <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
                 </svg>
-                <div class="upload-text">PDF ફાઇલ સિલેક્ટ કરો</div>
+                <div class="upload-text">Select PDF File</div>
             </div>
 
             <!-- Selected File Badge (shown when file is selected) -->
@@ -425,14 +425,14 @@
 
         <!-- MRP Text Input Group -->
         <div class="input-group">
-            <label for="mrp">MRP Text Lakho:</label>
+            <label for="mrp">Enter MRP Text:</label>
             <input type="text" id="mrp" value="MRP :- 1999">
         </div>
 
         <!-- Rename File Input Group -->
         <div class="input-group">
-            <label for="filename-input">New File Name (ડાઉનલોડ માટે):</label>
-            <input type="text" id="filename-input" placeholder="File name lakho...">
+            <label for="filename-input">New File Name (for download):</label>
+            <input type="text" id="filename-input" placeholder="Enter new file name...">
         </div>
 
         <!-- Action Buttons -->
@@ -442,7 +442,7 @@
         </div>
 
         <!-- Status Log -->
-        <div id="log">કોઈ ફાઈલ અપલોડ કરેલ નથી</div>
+        <div id="log">No file selected yet</div>
     </div>
 
     <!-- Right Area: Document Preview Pane -->
@@ -492,7 +492,7 @@
 
             // Update log
             const logDiv = document.getElementById('log');
-            logDiv.innerText = "ફાઇલ સિલેક્ટ થઈ ગઈ છે. 'Preview' બટન દબાવો.";
+            logDiv.innerText = "File selected. Click the 'Preview' button.";
             logDiv.style.color = "#475569";
         }
     }
@@ -517,7 +517,7 @@
         
         // Clear log
         const logDiv = document.getElementById('log');
-        logDiv.innerText = "કોઈ ફાઈલ અપલોડ કરેલ નથી";
+        logDiv.innerText = "No file selected yet";
         logDiv.style.color = "#64748b";
     }
 
@@ -534,11 +534,11 @@
         const logDiv = document.getElementById('log');
 
         if (!selectedFile) {
-            alert("Krupa kari ne file select karo!");
+            alert("Please select a PDF file first!");
             return;
         }
 
-        logDiv.innerText = "PDF Scan thai rahi che...";
+        logDiv.innerText = "Scanning PDF file...";
         logDiv.style.color = "#475569";
 
         try {
@@ -586,7 +586,7 @@
             }
 
             if (totalMatches === 0) {
-                logDiv.innerText = "PDF ma 'New' shabd malyo nahi.";
+                logDiv.innerText = "The word 'New' was not found in the PDF.";
                 logDiv.style.color = "#b91c1c";
                 return;
             }
@@ -594,7 +594,7 @@
             // Save the edited PDF bytes directly (extremely fast and infinite resolution vector)
             modifiedPdfBytes = await pdfDoc.save();
 
-            logDiv.innerText = `Total ${totalMatches} labels malya. Preview tayar che!`;
+            logDiv.innerText = `Found ${totalMatches} labels. Preview is ready!`;
             logDiv.style.color = "#047857";
             
             // Enable download button
@@ -605,7 +605,7 @@
             
         } catch (err) {
             console.error(err);
-            logDiv.innerText = "Bhool thai: " + err.message;
+            logDiv.innerText = "Error: " + err.message;
             logDiv.style.color = "#b91c1c";
         }
     }
@@ -658,13 +658,13 @@
             }
         } catch (err) {
             console.error(err);
-            previewContainer.innerHTML = '<div class="preview-error">Preview load karvama bhool thai.</div>';
+            previewContainer.innerHTML = '<div class="preview-error">Failed to load document preview.</div>';
         }
     }
 
     function downloadPDF() {
         if (!modifiedPdfBytes) {
-            alert("Pela preview check karo!");
+            alert("Please click Preview first!");
             return;
         }
         
@@ -685,7 +685,7 @@
         link.click();
         
         const logDiv = document.getElementById('log');
-        logDiv.innerText = "ફાઇલ ડાઉનલોડ થઈ ગઈ છે!";
+        logDiv.innerText = "File downloaded successfully!";
         logDiv.style.color = "#047857";
     }
 </script>
