@@ -890,32 +890,40 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
+    function handleFile(file) {
+        if (!file || file.type !== "application/pdf") {
+            alert("Please select or drop a valid PDF file!");
+            return;
+        }
+        selectedFile = file;
+        
+        // Show file card, hide upload zone
+        document.getElementById('upload-zone').classList.add('hidden');
+        document.getElementById('file-card').classList.remove('hidden');
+        
+        // Set file info in badge
+        document.getElementById('file-title').innerText = selectedFile.name;
+        document.getElementById('file-size').innerText = formatBytes(selectedFile.size);
+        
+        // Pre-populate Rename input
+        const baseName = selectedFile.name.substring(0, selectedFile.name.lastIndexOf('.')) || selectedFile.name;
+        document.getElementById('filename-input').value = "Final_" + baseName;
+
+        // Update LCD log screen
+        const logDiv = document.getElementById('log');
+        logDiv.innerText = "FILE LOADED. PRESS PREVIEW.";
+        logDiv.style.color = "#ffb000"; // Info status CRT amber text color
+        logDiv.style.textShadow = "0 0 6px rgba(255, 176, 0, 0.75)";
+
+        // Update status LEDs
+        document.getElementById('download-led').className = 'led led-red';
+        document.getElementById('preview-led').className = 'led led-blue';
+    }
+
     function onFileSelect() {
         const fileInput = document.getElementById('pdf');
         if (fileInput.files.length > 0) {
-            selectedFile = fileInput.files[0];
-            
-            // Show file card, hide upload zone
-            document.getElementById('upload-zone').classList.add('hidden');
-            document.getElementById('file-card').classList.remove('hidden');
-            
-            // Set file info in badge
-            document.getElementById('file-title').innerText = selectedFile.name;
-            document.getElementById('file-size').innerText = formatBytes(selectedFile.size);
-            
-            // Pre-populate Rename input
-            const baseName = selectedFile.name.substring(0, selectedFile.name.lastIndexOf('.')) || selectedFile.name;
-            document.getElementById('filename-input').value = "Final_" + baseName;
-
-            // Update LCD log screen
-            const logDiv = document.getElementById('log');
-            logDiv.innerText = "FILE LOADED. PRESS PREVIEW.";
-            logDiv.style.color = "#ffb000"; // Info status CRT amber text color
-            logDiv.style.textShadow = "0 0 6px rgba(255, 176, 0, 0.75)";
-
-            // Update status LEDs
-            document.getElementById('download-led').className = 'led led-red';
-            document.getElementById('preview-led').className = 'led led-blue';
+            handleFile(fileInput.files[0]);
         }
     }
 
@@ -1125,6 +1133,46 @@
         logDiv.innerText = "FILE COMPILATION COMPLETED";
         logDiv.style.color = "#38ef7d";
         logDiv.style.textShadow = "0 0 6px rgba(56, 239, 125, 0.75)";
+    }
+
+    // Drag and Drop Event Listeners for Skeuomorphic Clipboard
+    const uploadZone = document.getElementById('upload-zone');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        uploadZone.style.borderColor = "#7c4c24";
+        uploadZone.style.background = "#f4efe2";
+    }
+
+    function unhighlight(e) {
+        uploadZone.style.borderColor = "rgba(99, 102, 241, 0.4)";
+        uploadZone.style.background = "#faf8f2";
+    }
+
+    uploadZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
     }
 </script>
 
