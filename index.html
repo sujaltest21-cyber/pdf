@@ -743,25 +743,66 @@
                 const textContent = await textPage.getTextContent();
                 const pageLib = pages[i];
 
-                // Collect all "NEW" items on this page to determine column count
+                // Collect all "NEW" items on this page
                 const newItemsOnPage = textContent.items.filter(item => {
                     const cleanStr = item.str.trim();
                     return cleanStr === "New" || cleanStr === "NEW" || cleanStr.includes("New");
                 });
 
-                const uniqueX = [];
-                newItemsOnPage.forEach(itm => {
-                    const cx = itm.transform[4];
-                    if (!uniqueX.some(ux => Math.abs(ux - cx) < 30)) {
-                        uniqueX.push(cx);
+                // Group the "NEW" items on this page into columns by X coordinate
+                const colsMap = [];
+                newItemsOnPage.forEach(item => {
+                    const cx = item.transform[4];
+                    let existingCol = colsMap.find(c => Math.abs(c.x - cx) < 30);
+                    if (!existingCol) {
+                        existingCol = { x: cx, items: [] };
+                        colsMap.push(existingCol);
                     }
+                    existingCol.items.push(item);
                 });
-                const numCols = uniqueX.length;
-                
-                // Spacing from start of NEW to the right margin of the label:
-                // 3-column: title line ends at x + 148.11
-                // 4-column: title line ends at x + 121.63
-                const labelWidth = numCols === 4 ? 121.63 : 148.11;
+
+                // Sort columns by x coordinate
+                colsMap.sort((a, b) => a.x - b.x);
+
+                // Compute column width spacing
+                let colWidth = 180; // default label width fallback
+                if (colsMap.length > 1) {
+                    let totalSpacing = 0;
+                    for (let j = 0; j < colsMap.length - 1; j++) {
+                        totalSpacing += colsMap[j+1].x - colsMap[j].x;
+                    }
+                    colWidth = totalSpacing / (colsMap.length - 1);
+                }
+
+                // Determine the right boundary for each column based on its items and title lines
+                colsMap.forEach(col => {
+                    let maxRight = 0;
+                    col.items.forEach(newItem => {
+                        const x_new = newItem.transform[4];
+                        const y_new = newItem.transform[5];
+                        
+                        // Find any title items directly above this label
+                        const titleItems = textContent.items.filter(other => {
+                            const ox = other.transform[4];
+                            const oy = other.transform[5];
+                            // Y is ~10 points above NEW, X is in this label's horizontal column range
+                            return Math.abs(oy - (y_new + 10)) < 3 && 
+                                   ox >= x_new - 10 && 
+                                   ox < x_new + colWidth - 10;
+                        });
+
+                        titleItems.forEach(tItem => {
+                            const rEdge = tItem.transform[4] + tItem.width;
+                            if (rEdge > maxRight) {
+                                maxRight = rEdge;
+                            }
+                        });
+                    });
+
+                    // Fallback to 82% of the column width if no title lines or they are very short
+                    const fallbackWidth = colWidth * 0.82;
+                    col.rightEdge = Math.max(maxRight, col.x + fallbackWidth);
+                });
 
                 textContent.items.forEach(item => {
                     const cleanStr = item.str.trim();
@@ -772,22 +813,9 @@
                         const x = item.transform[4];
                         const y = item.transform[5];
                         
-                        // Try to find the title item above it on the page to match its right edge
-                        const titleItem = textContent.items.find(other => {
-                            const ox = other.transform[4];
-                            const oy = other.transform[5];
-                            // Title is on the line above (Y difference is ~10 points)
-                            // and starting at the same X column position
-                            return Math.abs(oy - (y + 10)) < 3 && Math.abs(ox - x) < 10;
-                        });
-
-                        // Use the title's right edge, fallback to default label width right edge
-                        let rightEdge = x + labelWidth;
-                        if (titleItem) {
-                            const titleRightEdge = titleItem.transform[4] + titleItem.width;
-                            // Ensure rightEdge is at least the title's end to avoid printing over it
-                            rightEdge = Math.max(rightEdge, titleRightEdge);
-                        }
+                        // Find which column this item belongs to
+                        const col = colsMap.find(c => Math.abs(c.x - x) < 30);
+                        const rightEdge = col ? col.rightEdge : (x + colWidth * 0.82);
 
                         // Calculate the width of the MRP text to align it to the right
                         const textWidth = helveticaFont.widthOfTextAtSize(mrpText, 8.5);
