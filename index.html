@@ -743,6 +743,26 @@
                 const textContent = await textPage.getTextContent();
                 const pageLib = pages[i];
 
+                // Collect all "NEW" items on this page to determine column count
+                const newItemsOnPage = textContent.items.filter(item => {
+                    const cleanStr = item.str.trim();
+                    return cleanStr === "New" || cleanStr === "NEW" || cleanStr.includes("New");
+                });
+
+                const uniqueX = [];
+                newItemsOnPage.forEach(itm => {
+                    const cx = itm.transform[4];
+                    if (!uniqueX.some(ux => Math.abs(ux - cx) < 30)) {
+                        uniqueX.push(cx);
+                    }
+                });
+                const numCols = uniqueX.length;
+                
+                // Spacing from start of NEW to the right margin of the label:
+                // 3-column: title line ends at x + 148.11
+                // 4-column: title line ends at x + 121.63
+                const labelWidth = numCols === 4 ? 121.63 : 148.11;
+
                 textContent.items.forEach(item => {
                     const cleanStr = item.str.trim();
                     
@@ -751,10 +771,31 @@
 
                         const x = item.transform[4];
                         const y = item.transform[5];
-                        const rightSideX = x + 100; 
+                        
+                        // Try to find the title item above it on the page to match its right edge
+                        const titleItem = textContent.items.find(other => {
+                            const ox = other.transform[4];
+                            const oy = other.transform[5];
+                            // Title is on the line above (Y difference is ~10 points)
+                            // and starting at the same X column position
+                            return Math.abs(oy - (y + 10)) < 3 && Math.abs(ox - x) < 10;
+                        });
+
+                        // Use the title's right edge, fallback to default label width right edge
+                        let rightEdge = x + labelWidth;
+                        if (titleItem) {
+                            const titleRightEdge = titleItem.transform[4] + titleItem.width;
+                            // Ensure rightEdge is at least the title's end to avoid printing over it
+                            rightEdge = Math.max(rightEdge, titleRightEdge);
+                        }
+
+                        // Calculate the width of the MRP text to align it to the right
+                        const textWidth = helveticaFont.widthOfTextAtSize(mrpText, 8.5);
+                        // Align the text so it ends at rightEdge (minus 2pt right margin padding)
+                        const drawX = rightEdge - textWidth - 2;
 
                         pageLib.drawText(mrpText, {
-                            x: rightSideX, 
+                            x: drawX, 
                             y: y,  
                             size: 8.5,   
                             font: helveticaFont,
